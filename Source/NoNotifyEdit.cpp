@@ -15,7 +15,7 @@ NoNotifyEdit::NoNotifyEdit() {
 }
 
 BEGIN_MESSAGE_MAP(NoNotifyEdit, CEdit)
-	ON_CONTROL_REFLECT_EX(EN_CHANGE, OnEnChange)
+	ON_CONTROL_REFLECT_EX(EN_CHANGE, &ThisClass::OnEnChange)
 END_MESSAGE_MAP()
 
 void NoNotifyEdit::SetWindowTextNoNotify(LPCTSTR s) {

@@ -84,7 +84,7 @@ void CInstrumentEditDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CInstrumentEditDlg, CDialog)
-	ON_NOTIFY(TCN_SELCHANGE, IDC_INST_TAB, OnTcnSelchangeInstTab)
+	ON_NOTIFY(TCN_SELCHANGE, IDC_INST_TAB, &ThisClass::OnTcnSelchangeInstTab)
 	ON_WM_PAINT()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()

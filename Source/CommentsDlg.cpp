@@ -75,10 +75,10 @@ void CCommentsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CCommentsDlg, CDialog)
-	ON_BN_CLICKED(IDOK, OnBnClickedOk)
+	ON_BN_CLICKED(IDOK, &ThisClass::OnBnClickedOk)
 	ON_WM_SIZE()
-	ON_EN_CHANGE(IDC_COMMENTS, OnEnChangeComments)
-	ON_BN_CLICKED(IDC_SHOWONOPEN, OnBnClickedShowonopen)
+	ON_EN_CHANGE(IDC_COMMENTS, &ThisClass::OnEnChangeComments)
+	ON_BN_CLICKED(IDC_SHOWONOPEN, &ThisClass::OnBnClickedShowonopen)
 	ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 

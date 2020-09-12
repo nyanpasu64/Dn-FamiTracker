@@ -200,7 +200,7 @@ void CSequenceInstrumentEditPanel::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CSequenceInstrumentEditPanel, CInstrumentEditPanel)
-	ON_NOTIFY(NM_RCLICK, IDC_INSTSETTINGS, OnRClickInstSettings)
+	ON_NOTIFY(NM_RCLICK, IDC_INSTSETTINGS, &ThisClass::OnRClickInstSettings)
 END_MESSAGE_MAP()
 
 void CSequenceInstrumentEditPanel::SetupDialog(LPCTSTR *pListItems)

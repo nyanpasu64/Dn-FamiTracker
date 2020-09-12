@@ -57,12 +57,12 @@ void CSplitKeyboardDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CSplitKeyboardDlg, CDialog)
-	ON_BN_CLICKED(IDC_CHECK_SPLIT_ENABLE, OnBnClickedCheckSplitEnable)
-	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_NOTE, OnCbnSelchangeComboSplitNote)
-	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_OCTAVE, OnCbnSelchangeComboSplitNote)
-	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_CHAN, OnCbnSelchangeComboSplitChan)
-	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_INST, OnCbnSelchangeComboSplitInst)
-	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_TRSP, OnCbnSelchangeComboSplitTrsp)
+	ON_BN_CLICKED(IDC_CHECK_SPLIT_ENABLE, &ThisClass::OnBnClickedCheckSplitEnable)
+	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_NOTE, &ThisClass::OnCbnSelchangeComboSplitNote)
+	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_OCTAVE, &ThisClass::OnCbnSelchangeComboSplitNote)
+	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_CHAN, &ThisClass::OnCbnSelchangeComboSplitChan)
+	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_INST, &ThisClass::OnCbnSelchangeComboSplitInst)
+	ON_CBN_SELCHANGE(IDC_COMBO_SPLIT_TRSP, &ThisClass::OnCbnSelchangeComboSplitTrsp)
 END_MESSAGE_MAP()
 
 

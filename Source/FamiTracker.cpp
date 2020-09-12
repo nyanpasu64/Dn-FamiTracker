@@ -59,10 +59,10 @@ const DWORD	SHARED_MEM_SIZE			= 256;
 // CFamiTrackerApp
 
 BEGIN_MESSAGE_MAP(CFamiTrackerApp, CWinApp)
-	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+	ON_COMMAND(ID_APP_ABOUT, &ThisClass::OnAppAbout)
 	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
+	ON_COMMAND(ID_FILE_NEW, &ThisClass::CWinApp::OnFileNew)
+	ON_COMMAND(ID_FILE_OPEN, &ThisClass::OnFileOpen)
 	ON_COMMAND(ID_RECENTFILES_CLEAR, OnRecentFilesClear)		// // //
 	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateRecentFiles)		// // //
 END_MESSAGE_MAP()

@@ -182,8 +182,8 @@ static const auto EFF_CONVERSION_050 = MakeEffectConversion({
 IMPLEMENT_DYNCREATE(CFamiTrackerDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CFamiTrackerDoc, CDocument)
-	ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
-	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
+	ON_COMMAND(ID_FILE_SAVE_AS, &ThisClass::OnFileSaveAs)
+	ON_COMMAND(ID_FILE_SAVE, &ThisClass::OnFileSave)
 END_MESSAGE_MAP()
 
 // CFamiTrackerDoc construction/destruction

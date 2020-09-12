@@ -54,11 +54,11 @@ void CSwapDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CSwapDlg, CDialog)
-	ON_EN_CHANGE(IDC_EDIT_SWAP_CHAN1, OnEnChangeEditSwapChan1)
-	ON_EN_CHANGE(IDC_EDIT_SWAP_CHAN2, OnEnChangeEditSwapChan2)
-	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP1, OnCbnSelchangeComboSwapChip1)
-	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP2, OnCbnSelchangeComboSwapChip2)
-	ON_BN_CLICKED(IDOK, OnBnClickedOk)
+	ON_EN_CHANGE(IDC_EDIT_SWAP_CHAN1, &ThisClass::OnEnChangeEditSwapChan1)
+	ON_EN_CHANGE(IDC_EDIT_SWAP_CHAN2, &ThisClass::OnEnChangeEditSwapChan2)
+	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP1, &ThisClass::OnCbnSelchangeComboSwapChip1)
+	ON_CBN_SELCHANGE(IDC_COMBO_SWAP_CHIP2, &ThisClass::OnCbnSelchangeComboSwapChip2)
+	ON_BN_CLICKED(IDOK, &ThisClass::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 

@@ -134,7 +134,7 @@ void CConfigVersion::UpdateInfo()
 BEGIN_MESSAGE_MAP(CConfigVersion, CPropertyPage)
 	ON_WM_VSCROLL()
 	ON_WM_HSCROLL()
-	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_VERSION_ERRORLEVEL, OnNMCustomdrawSliderVersionErrorlevel)
+	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_VERSION_ERRORLEVEL, &ThisClass::OnNMCustomdrawSliderVersionErrorlevel)
 END_MESSAGE_MAP()
 
 

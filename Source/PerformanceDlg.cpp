@@ -46,7 +46,7 @@ void CPerformanceDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CPerformanceDlg, CDialog)
 	ON_WM_TIMER()
-	ON_BN_CLICKED(IDOK, OnBnClickedOk)
+	ON_BN_CLICKED(IDOK, &ThisClass::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 

@@ -47,9 +47,9 @@ void CConfigSound::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CConfigSound, CPropertyPage)
 	ON_WM_HSCROLL()
-	ON_CBN_SELCHANGE(IDC_SAMPLE_RATE, OnCbnSelchangeSampleRate)
-	ON_CBN_SELCHANGE(IDC_SAMPLE_SIZE, OnCbnSelchangeSampleSize)
-	ON_CBN_SELCHANGE(IDC_DEVICES, OnCbnSelchangeDevices)
+	ON_CBN_SELCHANGE(IDC_SAMPLE_RATE, &ThisClass::OnCbnSelchangeSampleRate)
+	ON_CBN_SELCHANGE(IDC_SAMPLE_SIZE, &ThisClass::OnCbnSelchangeSampleSize)
+	ON_CBN_SELCHANGE(IDC_DEVICES, &ThisClass::OnCbnSelchangeDevices)
 END_MESSAGE_MAP()
 
 const int MAX_BUFFER_LEN = 500;	// 500 ms

@@ -55,7 +55,7 @@ void CInstrumentEditorVRC7::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CInstrumentEditorVRC7, CInstrumentEditPanel)
-	ON_CBN_SELCHANGE(IDC_PATCH, OnCbnSelchangePatch)
+	ON_CBN_SELCHANGE(IDC_PATCH, &ThisClass::OnCbnSelchangePatch)
 	ON_BN_CLICKED(IDC_M_AM, &CInstrumentEditorVRC7::OnBnClickedCheckbox)
 	ON_BN_CLICKED(IDC_M_VIB, &CInstrumentEditorVRC7::OnBnClickedCheckbox)
 	ON_BN_CLICKED(IDC_M_EG, &CInstrumentEditorVRC7::OnBnClickedCheckbox)

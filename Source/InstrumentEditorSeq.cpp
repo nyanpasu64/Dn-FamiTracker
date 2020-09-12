@@ -135,10 +135,10 @@ void CInstrumentEditorSeq::UpdateSequenceString(bool Changed)		// // //
 }
 
 BEGIN_MESSAGE_MAP(CInstrumentEditorSeq, CSequenceInstrumentEditPanel)
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_INSTSETTINGS, OnLvnItemchangedInstsettings)
-	ON_EN_CHANGE(IDC_SEQ_INDEX, OnEnChangeSeqIndex)
-	ON_BN_CLICKED(IDC_FREE_SEQ, OnBnClickedFreeSeq)
-	ON_COMMAND(ID_CLONE_SEQUENCE, OnCloneSequence)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_INSTSETTINGS, &ThisClass::OnLvnItemchangedInstsettings)
+	ON_EN_CHANGE(IDC_SEQ_INDEX, &ThisClass::OnEnChangeSeqIndex)
+	ON_BN_CLICKED(IDC_FREE_SEQ, &ThisClass::OnBnClickedFreeSeq)
+	ON_COMMAND(ID_CLONE_SEQUENCE, &ThisClass::OnCloneSequence)
 END_MESSAGE_MAP()
 
 // CInstrumentSettings message handlers

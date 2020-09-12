@@ -120,26 +120,26 @@ CConfigAppearance::~CConfigAppearance()
 BEGIN_MESSAGE_MAP(CConfigAppearance, CPropertyPage)
 	ON_WM_PAINT()
 	
-	ON_CBN_SELCHANGE(IDC_SCHEME, OnCbnSelchangeScheme)
+	ON_CBN_SELCHANGE(IDC_SCHEME, &ThisClass::OnCbnSelchangeScheme)
 	
-	ON_CBN_SELCHANGE(IDC_COL_ITEM, OnCbnSelchangeColItem)
+	ON_CBN_SELCHANGE(IDC_COL_ITEM, &ThisClass::OnCbnSelchangeColItem)
 
-	ON_BN_CLICKED(IDC_PICK_COL, OnBnClickedPickCol)
+	ON_BN_CLICKED(IDC_PICK_COL, &ThisClass::OnBnClickedPickCol)
 	
-	ON_BN_CLICKED(IDC_PATTERNCOLORS, OnBnClickedPatterncolors)
+	ON_BN_CLICKED(IDC_PATTERNCOLORS, &ThisClass::OnBnClickedPatterncolors)
 
-	ON_BN_CLICKED(IDC_DISPLAYFLATS, OnBnClickedDisplayFlats)
+	ON_BN_CLICKED(IDC_DISPLAYFLATS, &ThisClass::OnBnClickedDisplayFlats)
 
-	ON_CBN_SELCHANGE(IDC_FONT, OnCbnSelchangeFont)
+	ON_CBN_SELCHANGE(IDC_FONT, &ThisClass::OnCbnSelchangeFont)
 	
-	ON_CBN_SELCHANGE(IDC_FONT_SIZE, OnCbnSelchangeFontSize)
-	ON_CBN_EDITCHANGE(IDC_FONT_SIZE, OnCbnEditchangeFontSize)
+	ON_CBN_SELCHANGE(IDC_FONT_SIZE, &ThisClass::OnCbnSelchangeFontSize)
+	ON_CBN_EDITCHANGE(IDC_FONT_SIZE, &ThisClass::OnCbnEditchangeFontSize)
 
-	ON_CBN_SELCHANGE(IDC_FONT_PERCENT, OnCbnSelchangeFontPercent)
-	ON_CBN_EDITCHANGE(IDC_FONT_PERCENT, OnCbnEditchangeFontPercent)
+	ON_CBN_SELCHANGE(IDC_FONT_PERCENT, &ThisClass::OnCbnSelchangeFontPercent)
+	ON_CBN_EDITCHANGE(IDC_FONT_PERCENT, &ThisClass::OnCbnEditchangeFontPercent)
 	
-	ON_BN_CLICKED(IDC_BUTTON_APPEARANCE_SAVE, OnBnClickedButtonAppearanceSave)
-	ON_BN_CLICKED(IDC_BUTTON_APPEARANCE_LOAD, OnBnClickedButtonAppearanceLoad)
+	ON_BN_CLICKED(IDC_BUTTON_APPEARANCE_SAVE, &ThisClass::OnBnClickedButtonAppearanceSave)
+	ON_BN_CLICKED(IDC_BUTTON_APPEARANCE_LOAD, &ThisClass::OnBnClickedButtonAppearanceLoad)
 END_MESSAGE_MAP()
 
 

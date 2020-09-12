@@ -75,9 +75,9 @@ void CChannelsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CChannelsDlg, CDialog)
-	ON_NOTIFY(NM_CLICK, IDC_AVAILABLE_TREE, OnClickAvailable)
-	ON_NOTIFY(NM_DBLCLK, IDC_AVAILABLE_TREE, OnDblClickAvailable)
-	ON_NOTIFY(NM_DBLCLK, IDC_ADDED_LIST, OnDblClickAdded)
+	ON_NOTIFY(NM_CLICK, IDC_AVAILABLE_TREE, &ThisClass::OnClickAvailable)
+	ON_NOTIFY(NM_DBLCLK, IDC_AVAILABLE_TREE, &ThisClass::OnDblClickAvailable)
+	ON_NOTIFY(NM_DBLCLK, IDC_ADDED_LIST, &ThisClass::OnDblClickAdded)
 	ON_BN_CLICKED(IDC_MOVE_DOWN, &CChannelsDlg::OnBnClickedMoveDown)
 	ON_NOTIFY(NM_RCLICK, IDC_AVAILABLE_TREE, &CChannelsDlg::OnNMRClickAvailableTree)
 	ON_BN_CLICKED(IDC_MOVE_UP, &CChannelsDlg::OnBnClickedMoveUp)

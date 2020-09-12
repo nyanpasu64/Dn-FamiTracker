@@ -49,10 +49,10 @@ void CGotoDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CGotoDlg, CDialog)
-	ON_EN_CHANGE(IDC_EDIT_GOTO_FRAME, OnEnChangeEditGotoFrame)
-	ON_EN_CHANGE(IDC_EDIT_GOTO_ROW, OnEnChangeEditGotoRow)
-	ON_EN_CHANGE(IDC_EDIT_GOTO_CHANNEL, OnEnChangeEditGotoChannel)
-	ON_CBN_SELCHANGE(IDC_COMBO_GOTO_CHIP, OnCbnSelchangeComboGotoChip)
+	ON_EN_CHANGE(IDC_EDIT_GOTO_FRAME, &ThisClass::OnEnChangeEditGotoFrame)
+	ON_EN_CHANGE(IDC_EDIT_GOTO_ROW, &ThisClass::OnEnChangeEditGotoRow)
+	ON_EN_CHANGE(IDC_EDIT_GOTO_CHANNEL, &ThisClass::OnEnChangeEditGotoChannel)
+	ON_CBN_SELCHANGE(IDC_COMBO_GOTO_CHIP, &ThisClass::OnCbnSelchangeComboGotoChip)
 	ON_BN_CLICKED(IDOK, &CGotoDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 

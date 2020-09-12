@@ -81,7 +81,7 @@ void CTransposeDlg::Transpose(int Trsp, unsigned int Track)
 
 BEGIN_MESSAGE_MAP(CTransposeDlg, CDialog)
 	ON_BN_CLICKED(IDOK, &CTransposeDlg::OnBnClickedOk)
-	ON_CONTROL_RANGE(BN_CLICKED, BUTTON_ID, BUTTON_ID + MAX_INSTRUMENTS - 1, OnBnClickedInst)
+	ON_CONTROL_RANGE(BN_CLICKED, BUTTON_ID, BUTTON_ID + MAX_INSTRUMENTS - 1, &ThisClass::OnBnClickedInst)
 	ON_BN_CLICKED(IDC_BUTTON_TRSP_REVERSE, &CTransposeDlg::OnBnClickedButtonTrspReverse)
 	ON_BN_CLICKED(IDC_BUTTON_TRSP_CLEAR, &CTransposeDlg::OnBnClickedButtonTrspClear)
 END_MESSAGE_MAP()

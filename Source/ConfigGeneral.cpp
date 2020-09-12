@@ -108,11 +108,11 @@ void CConfigGeneral::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CConfigGeneral, CPropertyPage)
-	ON_CBN_EDITUPDATE(IDC_PAGELENGTH, OnCbnEditupdatePagelength)
-	ON_CBN_SELENDOK(IDC_PAGELENGTH, OnCbnSelendokPagelength)
-	ON_CBN_SELCHANGE(IDC_COMBO_STYLE, OnCbnSelchangeComboStyle)
+	ON_CBN_EDITUPDATE(IDC_PAGELENGTH, &ThisClass::OnCbnEditupdatePagelength)
+	ON_CBN_SELENDOK(IDC_PAGELENGTH, &ThisClass::OnCbnSelendokPagelength)
+	ON_CBN_SELCHANGE(IDC_COMBO_STYLE, &ThisClass::OnCbnSelchangeComboStyle)
 	ON_WM_LBUTTONDOWN()
-	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CONFIG_LIST, OnLvnItemchangedConfigList)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_CONFIG_LIST, &ThisClass::OnLvnItemchangedConfigList)
 END_MESSAGE_MAP()
 
 
