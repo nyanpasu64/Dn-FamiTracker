@@ -1,1 +1,2 @@
-# cmake_user_begin is called before project(). You can set global options.
+# Example: Enable ASAN on MSVC (experimental, only supported on 32-bit release builds).
+set(FAMITRACKER_ASAN ON)

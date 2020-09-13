@@ -50,6 +50,18 @@ set_property(
     " /MANIFEST:NO"
 )
 
+# Enable ASAN if requested.
+if (FAMITRACKER_ASAN)
+    target_compile_options(${exe} PRIVATE /fsanitize=address)
+
+    # Currently, ASAN only works on x86-32 with static MSVCRT.
+    # I think static MSVCRT implies static MFC,
+    # which I think is unavailable on debug builds.
+    # Once ASAN is finalized,
+    # this should be changed to have LINK.exe pick the right library itself.
+    target_link_libraries(${exe} clang_rt.asan-i386.lib)
+endif()
+
 # Generating .pdb files
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC" AND CMAKE_BUILD_TYPE MATCHES "Release")
    target_compile_options(${exe} PRIVATE /Zi)
