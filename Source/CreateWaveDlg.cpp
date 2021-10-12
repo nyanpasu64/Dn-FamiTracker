@@ -114,15 +114,8 @@ void CCreateWaveDlg::OnBnClickedBegin()
 		FileName.AppendFormat(_T(" - Track %02i (%s)"), Track + 1, pDoc->GetTrackTitle(Track).GetBuffer());
 	}
 
-	CString fileFilter = LoadDefaultFilter(IDS_FILTER_WAV, _T(".wav"));	
-	CFileDialog SaveDialog(FALSE, _T("wav"), FileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, fileFilter);
-
 	// Close this dialog
 	EndDialog(0);
-
-	// Ask for file location
-	if (SaveDialog.DoModal() == IDCANCEL)
-		return;
 	
 	// Save
 	if (IsDlgButtonChecked(IDC_RADIO_LOOP)) {
@@ -138,7 +131,7 @@ void CCreateWaveDlg::OnBnClickedBegin()
 
 	// Mute selected channels
 
-	CString outPathC = SaveDialog.GetPathName();
+	CString outPathC = "C:/Users/nyanpasu64/tmp/dn-export.wav";
 	fs::path outPath = conv::to_utf8(outPathC);
 
 
