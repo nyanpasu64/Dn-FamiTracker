@@ -85,7 +85,7 @@ BOOL CWavProgressDlg::OnInitDialog()
 		EndDialog(0);
 
 	m_dwStartTime = GetTickCount();
-	SetTimer(0, 200, NULL);
+	SetTimer(0, 0, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
