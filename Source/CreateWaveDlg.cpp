@@ -31,6 +31,7 @@
 
 //#include <string>
 #include <filesystem>
+#include <iostream>
 
 const int MAX_LOOP_TIMES = 99;
 const int MAX_PLAY_TIME	 = (99 * 60) + 0;
@@ -147,12 +148,15 @@ void CCreateWaveDlg::OnBnClickedBegin()
 				pView->ToggleChannel(i);
 		}
 
+		std::cerr << "[gui] rendering wav\n";
 		CWavProgressDlg ProgressDlg;
 		// Show the render progress dialog, this will also start rendering
 		ProgressDlg.BeginRender(outPathC, EndType, EndParam, Track);
 		if (ProgressDlg.CancelRender)
 			goto end;
 	}
+
+	ASSERT(!theApp.GetSoundGenerator()->IsRendering());
 
 	if (IsDlgButtonChecked(IDC_SEPERATE_CHANNEL_EXPORT)) {
 		for (int i = 0; i < nchan; ++i) {
@@ -175,7 +179,10 @@ void CCreateWaveDlg::OnBnClickedBegin()
 
 				CString chanOutPathC = conv::to_t(chanOutPath.string()).c_str();
 
+				ASSERT(!theApp.GetSoundGenerator()->IsRendering());
+				std::cerr << "[gui] rendering channel\n";
 				CWavProgressDlg ProgressDlg;
+				ASSERT(!theApp.GetSoundGenerator()->IsRendering());
 				// Show the render progress dialog, this will also start rendering
 				ProgressDlg.BeginRender(chanOutPathC, EndType, EndParam, Track);
 

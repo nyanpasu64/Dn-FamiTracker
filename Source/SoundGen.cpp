@@ -52,6 +52,7 @@
 #include "MIDI.h"
 #include "ChannelFactory.h"		// // // test
 #include "DetuneTable.h"		// // //
+#include <atomic>
 #include <iostream>
 
 // 1kHz test tone
@@ -1798,6 +1799,8 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		WaitForStop();
 	}
 
+	CSingleLock l = Lock();
+
 	m_iRenderEndWhen = SongEndType;
 	m_iRenderEndParam = SongEndParam;
 	m_iRenderTrack = Track;
@@ -1813,6 +1816,9 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		m_iRenderRowCount = m_iRenderEndParam;
 	}
 
+	ASSERT(!m_bRendering);
+	ASSERT(m_pWaveFile == nullptr);
+	std::cerr << "[gui] opening file\n";
 	m_pWaveFile = std::make_unique<CWaveFile>();
 	// Unfortunately, destructor doesn't cleanup object. Only CloseFile() does.
 	if (!m_pWaveFile ||
@@ -1820,8 +1826,10 @@ bool CSoundGen::RenderToFile(LPTSTR pFile, render_end_t SongEndType, int SongEnd
 		AfxMessageBox(IDS_FILE_OPEN_ERROR);
 		return false;
 	}
-	else
+	else {
+		atomic_thread_fence(std::memory_order_release);
 		PostThreadMessage(WM_USER_START_RENDER, 0, 0);
+	}
 
 	return true;
 }
@@ -1832,6 +1840,8 @@ void CSoundGen::StopRendering()
 	ASSERT(GetCurrentThreadId() == m_nThreadID);
 	ASSERT(m_bRendering);
 
+	CSingleLock l = Lock();
+
 	if (!IsRendering())
 		return;
 
@@ -1841,6 +1851,7 @@ void CSoundGen::StopRendering()
 	m_bRequestRenderStop = false;		// // //
 	m_iPlayFrame = 0;
 	m_iPlayRow = 0;
+	std::cerr << "[audio] closing file\n";
 	m_pWaveFile->CloseFile();		// // //
 	m_pWaveFile.reset();
 
@@ -2209,6 +2220,7 @@ void CSoundGen::OnResetPlayer(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnStartRender(WPARAM wParam, LPARAM lParam)
 {
+	atomic_thread_fence(std::memory_order_acquire);
 	ResetBuffer();
 	m_bRequestRenderStop = false;
 	m_bStoppingRender = false;		// // //

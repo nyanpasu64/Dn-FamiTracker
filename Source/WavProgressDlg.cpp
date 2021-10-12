@@ -26,6 +26,7 @@
 #include "APU\Types.h"
 #include "SoundGen.h"
 #include "WavProgressDlg.h"
+#include <iostream>
 
 
 // CWavProgressDlg dialog
@@ -100,11 +101,16 @@ void CWavProgressDlg::OnTimer(UINT_PTR nIDEvent)
 	CProgressCtrl *pProgressBar = static_cast<CProgressCtrl*>(GetDlgItem(IDC_PROGRESS_BAR));
 	CSoundGen *pSoundGen = theApp.GetSoundGenerator();
 
+	CSingleLock l = pSoundGen->Lock();
 	bool Rendering = pSoundGen->IsRendering();
+	if (!Rendering) {
+		std::cerr << "[gui] render complete\n";
+	}
 
 	int Frame, RenderedTime, FramesToRender, RowCount, Row;
 	bool Done;
 	pSoundGen->GetRenderStat(Frame, RenderedTime, Done, FramesToRender, Row, RowCount);
+	l.Unlock();
 
 	if (!Rendering)
 		Row = RowCount;	// Force 100%
