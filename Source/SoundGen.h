@@ -30,6 +30,7 @@
 #include <queue>		// // //
 #include "Common.h"
 
+#include <atomic>
 #include <memory>
 
 const int VIBRATO_LENGTH = 256;
@@ -335,7 +336,7 @@ private:
 	int					m_iTempoAccum;						// Used for speed calculation
 	unsigned int		m_iPlayTicks;
 	bool				m_bPlaying;							// True when tracker is playing back the module
-	bool				m_bHaltRequest;						// True when a halt is requested
+	std::atomic<bool>	m_bHaltRequest;						// True when a halt is requested
 	bool				m_bPlayLooping;
 	int					m_iFrameCounter;
 
