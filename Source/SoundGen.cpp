@@ -2036,6 +2036,7 @@ BOOL CSoundGen::OnIdle(LONG lCount)
 
 	if (m_bHaltRequest) {
 		// Halt has been requested, abort playback here
+		CSingleLock l = Lock();
 		HaltPlayer();
 	}
 
@@ -2203,6 +2204,7 @@ void CSoundGen::OnLoadSettings(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::OnStopPlayer(WPARAM wParam, LPARAM lParam)
 {
+	CSingleLock l = Lock();
 	HaltPlayer();
 }
 
