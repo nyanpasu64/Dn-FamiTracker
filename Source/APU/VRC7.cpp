@@ -24,6 +24,10 @@
 #include "APU.h"
 #include "VRC7.h"
 #include "../RegisterState.h"		// // //
+#include <chrono>
+#include <thread>
+
+using namespace std::chrono_literals;
 
 const float  CVRC7::AMPLIFY = 4.6f;		// Mixing amplification, VRC7 patch 14 is 4, 88 times stronger than a 50 % square @ v = 15
 const uint32_t CVRC7::OPL_CLOCK = 3579545;	// Clock frequency
@@ -74,6 +78,8 @@ void CVRC7::SetSampleSpeed(uint32_t SampleRate, double ClockRate, uint32_t Frame
 	if (m_pOPLLInt != NULL) {
 		OPLL_delete(m_pOPLLInt);
 	}
+
+	std::this_thread::sleep_for(1s);
 
 	m_pOPLLInt = OPLL_new(OPL_CLOCK, SampleRate);
 
