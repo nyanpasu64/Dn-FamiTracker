@@ -1314,29 +1314,12 @@ void CMainFrame::OnLoadInstrument()
 
 	CString filter = LoadDefaultFilter(IDS_FILTER_FTI, _T(".fti"));
 	CFamiTrackerDoc *pDoc = static_cast<CFamiTrackerDoc*>(GetActiveDocument());
-	CFileDialog FileDialog(TRUE, _T("fti"), 0, OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT, filter);
 
-	FileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_FTI);
-
-	if (FileDialog.DoModal() == IDCANCEL)
+	int Index = pDoc->LoadInstrument("C:/test.fti");
+	if (Index == -1)
 		return;
-
-	POSITION pos (FileDialog.GetStartPosition());
-
-	// Load multiple files
-	while (pos) {
-		CString csFileName(FileDialog.GetNextPathName(pos));
-		int Index = pDoc->LoadInstrument(csFileName);
-		if (Index == -1)
-			return;
-		SelectInstrument(Index);		// // //
-		m_pInstrumentList->InsertInstrument(Index);
-	}
-	
-	if (FileDialog.GetFileName().GetLength() == 0)		// // //
-		theApp.GetSettings()->SetPath(FileDialog.GetPathName() + _T("\\"), PATH_FTI);
-	else
-		theApp.GetSettings()->SetPath(FileDialog.GetPathName(), PATH_FTI);
+	SelectInstrument(Index);		// // //
+	m_pInstrumentList->InsertInstrument(Index);
 }
 
 void CMainFrame::OnSaveInstrument()
@@ -1369,17 +1352,7 @@ void CMainFrame::OnSaveInstrument()
 			*ptr = ' ';
 	}
 
-	CString filter = LoadDefaultFilter(IDS_FILTER_FTI, _T(".fti"));
-	CFileDialog FileDialog(FALSE, _T("fti"), Name, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter);
-
-	FileDialog.m_pOFN->lpstrInitialDir = theApp.GetSettings()->GetPath(PATH_FTI);
-
-	if (FileDialog.DoModal() == IDCANCEL)
-		return;
-
-	pDoc->SaveInstrument(GetSelectedInstrument(), FileDialog.GetPathName());
-
-	theApp.GetSettings()->SetPath(FileDialog.GetPathName(), PATH_FTI);
+	pDoc->SaveInstrument(GetSelectedInstrument(), "C:/test.fti");
 
 	if (m_pInstrumentFileTree)
 		m_pInstrumentFileTree->Changed();
