@@ -32,6 +32,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 
 const int VIBRATO_LENGTH = 256;
 const int TREMOLO_LENGTH = 256;
@@ -307,7 +308,7 @@ private:
 
 	// Thread synchronization
 private:
-	mutable CCriticalSection m_csAPULock;		// // //
+	mutable std::mutex m_csAPULock;		// // //
 	mutable CCriticalSection m_csVisualizerWndLock;
 
 	// Handles
@@ -436,9 +437,11 @@ public:
 	afx_msg void OnRemoveDocument(WPARAM wParam, LPARAM lParam);
 
 public:
-	CSingleLock Lock() {
-		auto out = CSingleLock(&m_csAPULock, TRUE);
-		ASSERT(out.IsLocked());
-		return out;
+	std::unique_lock<std::mutex> Lock() {
+		return std::unique_lock<std::mutex>(m_csAPULock);
+	}
+
+	std::unique_lock<std::mutex> DeferLock() {
+		return std::unique_lock<std::mutex>(m_csAPULock, std::defer_lock);
 	}
 };
