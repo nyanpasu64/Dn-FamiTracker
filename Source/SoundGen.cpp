@@ -703,6 +703,8 @@ bool CSoundGen::ResetAudioDevice()
 	unsigned int BufferLen	= pSettings->Sound.iBufferLength;
 	unsigned int Device		= pSettings->Sound.iDevice;
 
+	CSingleLock l = Lock();
+
 	m_iSampleSize = SampleSize;
 	m_iAudioUnderruns = 0;
 	m_iBufferPtr = 0;
