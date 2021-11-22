@@ -2261,6 +2261,8 @@ void CSoundGen::OnSetChip(WPARAM wParam, LPARAM lParam)
 {
 	int Chip = wParam;
 
+	CSingleLock l = Lock();
+
 	{
 		auto config = CAPUConfig(m_pAPU);
 		config.SetExternalSound(Chip);
