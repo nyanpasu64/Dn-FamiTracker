@@ -28,9 +28,8 @@ include(cmake/exe.cmake)
 
 #builds the .chm file
 if(WIN32)
-	add_custom_command(TARGET ${exe}
-		PRE_BUILD
-		COMMAND cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
+	add_custom_target(generate-help
+		cmd /c ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile-chm.bat
 		COMMAND move Dn-Famitracker.chm ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Generating help file...")
