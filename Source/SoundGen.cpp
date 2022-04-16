@@ -920,8 +920,6 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	T *pConversionBuffer = (T*)m_pAccumBuffer;
 
 	unsigned int framesWritable, bytesWritable;
-	TryWaitForWritable(framesWritable, bytesWritable);
-	TryWaitForWritable(framesWritable, bytesWritable);
 	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
 		return;
 	}
@@ -974,6 +972,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 			if (!PlayBuffer(framesWritable, bytesWritable))
 				return;
 
+			// bug: not idempotent
 			if (!TryWaitForWritable(framesWritable, bytesWritable)) {
 				return;
 			}
@@ -1018,7 +1017,7 @@ bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite
 		// Output to direct sound
 
 		// Write audio to buffer
-		bool b = m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, framesToWrite);
+		bool b = m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, bytesToWrite);
 		TRACE("} = %d\n", b);
 
 		// Draw graph
