@@ -32,14 +32,14 @@
 // Return values from WaitForDirectSoundEvent()
 enum buffer_event_t {
 	BUFFER_NONE = 0,
-	BUFFER_CUSTOM_EVENT = 1, 
-	BUFFER_TIMEOUT, 
-	BUFFER_IN_SYNC, 
+	BUFFER_CUSTOM_EVENT = 1,
+	BUFFER_TIMEOUT,
+	BUFFER_IN_SYNC,
 	BUFFER_OUT_OF_SYNC
 };
 
 // DirectSound channel
-class CDSoundChannel 
+class CDSoundChannel
 {
 	friend class CDSound;
 
@@ -65,7 +65,7 @@ public:
 
 private:
 	int GetPlayBlock() const;
-	
+
 	/*!
 	https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418062(v%3Dvs.85)
 	The write cursor is the point in the buffer ahead of which it is safe to write data to the buffer.
@@ -99,7 +99,7 @@ private:
 };
 
 // DirectSound
-class CDSound 
+class CDSound
 {
 public:
 	CDSound(HWND hWnd, HANDLE hNotification);

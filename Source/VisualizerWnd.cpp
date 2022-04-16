@@ -180,7 +180,7 @@ UINT CVisualizerWnd::ThreadProc()
 }
 
 BOOL CVisualizerWnd::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
-{	
+{
 	// This is saved
 	m_iCurrentState = theApp.GetSettings()->SampleWinState;
 
@@ -281,7 +281,7 @@ void CVisualizerWnd::OnDestroy()
 	// Shut down worker thread
 	if (m_pWorkerThread != NULL) {
 		HANDLE hThread = m_pWorkerThread->m_hThread;
-		
+
 		m_bThreadRunning = false;
 		::SetEvent(m_hNewSamples);
 

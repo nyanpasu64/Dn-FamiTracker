@@ -63,10 +63,10 @@ CDSound::~CDSound()
 }
 
 bool CDSound::SetupDevice(int iDevice)
-{	
+{
 	if (iDevice > (int)m_iDevices)
 		iDevice = 0;
-	
+
 	if (m_lpDirectSound) {
 		m_lpDirectSound->Release();
 		m_lpDirectSound = NULL;
@@ -131,7 +131,7 @@ void CDSound::EnumerateDevices()
 		ClearEnumeration();
 
 	DirectSoundEnumerate(DSEnumCallback, NULL);
-	
+
 #ifdef _DEBUG
 	// Add an invalid device for debugging reasons
 	GUID g;
@@ -188,14 +188,14 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	// Adjust buffer length in case a buffer would end up in half samples
 	while ((SampleRate * BufferLength / (Blocks * 1000) != (double)SampleRate * BufferLength / (Blocks * 1000)))
 		++BufferLength;
- 
+
 	CDSoundChannel *pChannel = new CDSoundChannel();
 
 	HANDLE hBufferEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	int SoundBufferSize = CalculateBufferLength(BufferLength, SampleRate, SampleSize, Channels);
 	int BlockSize = SoundBufferSize / Blocks;
-	
+
 	pChannel->m_iBufferLength		= BufferLength;			// in ms
 	pChannel->m_iSoundBufferSize	= SoundBufferSize;		// in bytes
 	pChannel->m_iBlockSize			= BlockSize;			// in bytes
@@ -246,7 +246,7 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	}
 
 	pChannel->ClearBuffer();
-	
+
 	return pChannel;
 }
 
@@ -309,7 +309,7 @@ bool CDSoundChannel::ClearBuffer()
 
 	if (FAILED(m_lpDirectSoundBuffer->Lock(0, m_iSoundBufferSize, (void**)&pAudioPtr1, &AudioBytes1, (void**)&pAudioPtr2, &AudioBytes2, 0)))
 		return false;
-	
+
 	if (m_iSampleSize == 8) {
 		memset(pAudioPtr1, 0x80, AudioBytes1);
 		if (pAudioPtr2)
@@ -343,7 +343,7 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	int	  Block = m_iCurrentWriteBlock;
 
 	ASSERT(Samples == m_iBlockSize);
-	
+
 	if (FAILED(m_lpDirectSoundBuffer->Lock(Block * m_iBlockSize, m_iBlockSize, (void**)&pAudioPtr1, &AudioBytes1, (void**)&pAudioPtr2, &AudioBytes2, 0)))
 		return false;
 
