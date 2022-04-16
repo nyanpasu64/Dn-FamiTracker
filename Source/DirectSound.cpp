@@ -200,7 +200,7 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	pChannel->m_iSampleRate			= SampleRate;
 	pChannel->m_iChannels			= Channels;
 
-	pChannel->m_iCurrentWriteBlock	= 0;
+	pChannel->m_iPrevWritePos = 0;
 	pChannel->m_hWndTarget			= m_hWndTarget;
 	pChannel->m_hEventList[0]		= m_hNotificationHandle;
 	pChannel->m_hEventList[1]		= hBufferEvent;
@@ -261,7 +261,7 @@ void CDSound::CloseChannel(CDSoundChannel *pChannel)
 
 CDSoundChannel::CDSoundChannel()
 {
-	m_iCurrentWriteBlock = 0;
+	m_iPrevWritePos = 0;
 
 	m_hEventList[0] = NULL;
 	m_hEventList[1] = NULL;
@@ -321,7 +321,7 @@ bool CDSoundChannel::ClearBuffer()
 		return false;
 
 	m_lpDirectSoundBuffer->SetCurrentPosition(0);
-	m_iCurrentWriteBlock = 0;
+	m_iPrevWritePos = 0;
 
 	return true;
 }
@@ -349,7 +349,7 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 	case WAIT_OBJECT_0:			// External event
 		return BUFFER_CUSTOM_EVENT;
 	case WAIT_OBJECT_0 + 1:		// DirectSound buffer
-		return (GetWritableBlock() == m_iCurrentWriteBlock) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
+		return (GetWritableBlock() == (m_iPrevWritePos / m_iBlockSize)) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
 	case WAIT_TIMEOUT:			// Timeout
 		return BUFFER_TIMEOUT;
 	}
@@ -358,10 +358,12 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 	return BUFFER_NONE;
 }
 
-uint32_t CDSoundChannel::BufferFramesWritable() const
+uint32_t CDSoundChannel::BufferFramesWritable()
 {
 	DWORD PlayPos, WritePos;
 	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, &WritePos);
+	TRACE("PlayPos=%d WritePos=%d\n", PlayPos, WritePos);
+	m_iPrevWritePos = WritePos;
 
 	// Only write up to the block boundary preceding PlayPos.
 	// TODO Remove this line if it causes stuttering.
@@ -375,7 +377,7 @@ uint32_t CDSoundChannel::BufferFramesWritable() const
 	return (PlayPos - WritePos) / (m_iChannels * m_iSampleBytes);
 }
 
-uint32_t CDSoundChannel::BufferBytesWritable() const
+uint32_t CDSoundChannel::BufferBytesWritable()
 {
 	return FramesToBytes(BufferFramesWritable());
 }
@@ -387,13 +389,15 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	// Buffer	- Pointer to a buffer with samples
 	// Samples	- Number of samples, in bytes
 	//
+	TRACE("WriteBuffer(%d)\n", Samples);
 
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
-	int	  Block = m_iCurrentWriteBlock;
+
+	auto BytesWritten = FramesToBytes(Samples);
 
 	if (FAILED(m_lpDirectSoundBuffer->Lock(
-		Block * m_iBlockSize, m_iBlockSize,
+		m_iPrevWritePos, BytesWritten,
 		&pAudioPtr1, &AudioBytes1,
 		&pAudioPtr2, &AudioBytes2,
 		0
@@ -410,12 +414,12 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	if (FAILED(m_lpDirectSoundBuffer->Unlock(pAudioPtr1, AudioBytes1, pAudioPtr2, AudioBytes2)))
 		return false;
 
-	AdvanceWritePointer();
+	m_iPrevWritePos = (m_iPrevWritePos + BytesWritten) % m_iSoundBufferSize;
 
 	return true;
 }
 
-int CDSoundChannel::GetPlayBlock() const
+int CDSoundChannel::GetPlayBlock()
 {
 	// Return the block where the play pos is
 	DWORD PlayPos, WritePos;
@@ -423,15 +427,11 @@ int CDSoundChannel::GetPlayBlock() const
 	return (PlayPos / m_iBlockSize);
 }
 
-int CDSoundChannel::GetWritableBlock() const
+int CDSoundChannel::GetWritableBlock()
 {
 	// Return the block where the write pos is
 	DWORD PlayPos, WritePos;
 	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, &WritePos);
+	m_iPrevWritePos = WritePos;
 	return (WritePos / m_iBlockSize);
-}
-
-void CDSoundChannel::AdvanceWritePointer()
-{
-	m_iCurrentWriteBlock = (m_iCurrentWriteBlock + 1) % m_iBlocks;
 }

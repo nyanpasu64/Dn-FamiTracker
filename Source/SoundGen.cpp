@@ -842,7 +842,9 @@ void CSoundGen::ResetBuffer()
 }
 
 bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable) {
-	if (m_pDSoundChannel->BufferFramesWritable() >= m_pDSoundChannel->GetBlockSamples()) {
+	auto w = m_pDSoundChannel->BufferFramesWritable();
+	TRACE("BufferFramesWritable=%d\n", w);
+	if (w >= m_pDSoundChannel->GetBlockSamples()) {
 		goto done;
 	}
 

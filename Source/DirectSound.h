@@ -69,13 +69,13 @@ public:
 	// Steady-state
 	buffer_event_t WaitForSyncEvent(DWORD dwTimeout);
 
-	uint32_t BufferFramesWritable() const;
-	uint32_t BufferBytesWritable() const;
+	uint32_t BufferFramesWritable();
+	uint32_t BufferBytesWritable();
 
 	bool WriteBuffer(char const* pBuffer, unsigned int Samples);
 
 private:
-	int GetPlayBlock() const;
+	int GetPlayBlock();
 
 	/*!
 	https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418062(v%3Dvs.85)
@@ -85,9 +85,7 @@ private:
 	Data should not be written to the blocks in (?, write cursor's block].
 	Otherwise, you risk writing before the write cursor, which will not be played back properly.
 	*/
-	int GetWritableBlock() const;
-
-	void AdvanceWritePointer();
+	int GetWritableBlock();
 
 private:
 	LPDIRECTSOUNDBUFFER	m_lpDirectSoundBuffer;
@@ -106,7 +104,7 @@ private:
 	unsigned int	m_iBlockSize;				// in bytes
 
 	// State
-	unsigned int	m_iCurrentWriteBlock;
+	unsigned int m_iPrevWritePos;  // bytes
 };
 
 // DirectSound
