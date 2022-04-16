@@ -842,6 +842,10 @@ void CSoundGen::ResetBuffer()
 }
 
 bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable) {
+	if (m_pDSoundChannel->BufferFramesWritable() >= m_pDSoundChannel->GetBlockSamples()) {
+		goto done;
+	}
+
 	// Wait for a buffer event
 	while (true) {
 		DWORD dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT);
