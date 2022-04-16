@@ -69,7 +69,7 @@ public:
 	// Steady-state
 	buffer_event_t WaitForSyncEvent(DWORD dwTimeout);
 
-	bool WriteBuffer(char const* pBuffer, unsigned int Samples);
+	bool WriteBuffer(char const* pBuffer, unsigned int Bytes);
 
 private:
 	int GetPlayBlock();

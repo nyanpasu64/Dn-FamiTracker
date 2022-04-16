@@ -364,20 +364,20 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 	return BUFFER_NONE;
 }
 
-bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
+bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Bytes)
 {
 	// Fill sound buffer
 	//
 	// Buffer	- Pointer to a buffer with samples
-	// Samples	- Number of samples, in bytes
+	// Bytes	- Number of samples, in bytes
 	//
-	TRACE("WriteBuffer(%d) {\n", Samples);
+	TRACE("WriteBuffer(%d) {\n", Bytes);
 
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
 	int	  Block = m_iCurrentWriteBlock;
 
-	ASSERT(Samples == m_iBlockSize);
+	ASSERT(Bytes == m_iBlockSize);
 
 	TRACE("Writing to block %d\n", Block);
 	if (FAILED(m_lpDirectSoundBuffer->Lock(
