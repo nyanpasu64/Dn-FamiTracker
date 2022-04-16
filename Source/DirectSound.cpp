@@ -379,7 +379,7 @@ uint32_t CDSoundChannel::BufferFramesWritable()
 
 	// Only write up to the block boundary preceding Pos.
 	// TODO Remove this line if it causes stuttering.
-	Pos = Pos / m_iBlockSize * m_iBlockSize;
+	//Pos = Pos / m_iBlockSize * m_iBlockSize;
 
 	// Allow writing past the wraparound.
 	if (Pos < m_iPrevWritePos) {
