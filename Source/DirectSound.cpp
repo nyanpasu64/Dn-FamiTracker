@@ -32,13 +32,11 @@
 #include "DirectSound.h"
 #include "../resource.h"
 
-// The single CDSound object
-CDSound *CDSound::pThisObject = NULL;
-
 // Class members
 
 BOOL CALLBACK CDSound::DSEnumCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext)
 {
+	auto pThisObject = (CDSound*)lpContext;
 	return pThisObject->EnumerateCallback(lpGuid, lpcstrDescription, lpcstrModule, lpContext);
 }
 
@@ -50,8 +48,6 @@ CDSound::CDSound(HWND hWnd, HANDLE hNotification) :
 	m_hWndTarget(hWnd),
 	m_hNotificationHandle(hNotification)
 {
-	ASSERT(pThisObject == NULL);
-	pThisObject = this;
 }
 
 CDSound::~CDSound()
@@ -130,7 +126,7 @@ void CDSound::EnumerateDevices()
 	if (m_iDevices != 0)
 		ClearEnumeration();
 
-	DirectSoundEnumerate(DSEnumCallback, NULL);
+	DirectSoundEnumerate(DSEnumCallback, this);
 
 #ifdef _DEBUG
 	// Add an invalid device for debugging reasons

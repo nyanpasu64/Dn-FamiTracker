@@ -129,7 +129,6 @@ public:
 
 protected:
 	static BOOL CALLBACK DSEnumCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext);
-	static CDSound *pThisObject;
 
 private:
 	HWND			m_hWndTarget;
