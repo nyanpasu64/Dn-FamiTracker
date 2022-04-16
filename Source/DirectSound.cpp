@@ -326,6 +326,16 @@ bool CDSoundChannel::ClearBuffer()
 	return true;
 }
 
+uint32_t CDSoundChannel::BytesToFrames(uint32_t Bytes) const
+{
+	return Bytes / m_iSampleBytes / m_iChannels;
+}
+
+uint32_t CDSoundChannel::FramesToBytes(uint32_t Frames) const
+{
+	return Frames * m_iSampleBytes * m_iChannels;
+}
+
 buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 {
 	// Wait for a DirectSound event
@@ -346,6 +356,22 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 
 	// Error
 	return BUFFER_NONE;
+}
+
+uint32_t CDSoundChannel::BufferFramesWritable() const
+{
+	DWORD PlayPos, WritePos;
+	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, &WritePos);
+	if (PlayPos < WritePos) {
+		PlayPos += m_iSoundBufferSize;
+	}
+	ASSERT(PlayPos >= WritePos);
+	return (PlayPos - WritePos) / (m_iChannels * m_iSampleBytes);
+}
+
+uint32_t CDSoundChannel::BufferBytesWritable() const
+{
+	return FramesToBytes(BufferFramesWritable());
 }
 
 bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)

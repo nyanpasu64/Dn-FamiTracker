@@ -25,6 +25,7 @@
 #ifndef DSOUND_H
 #define DSOUND_H
 
+#include <cstdint>
 #include <mmsystem.h>
 #include <InitGuid.h>
 #include <dsound.h>
@@ -55,6 +56,9 @@ public:
 
 	// Buffer calculations
 
+	uint32_t BytesToFrames(uint32_t Bytes) const;
+	uint32_t FramesToBytes(uint32_t Frames) const;
+
 	int GetBlockSize() const	{ return m_iBlockSize; };
 	int GetBlockSamples() const	{ return m_iBlockSize >> (m_iSampleBytes - 1); };
 	int GetBlocks()	const		{ return m_iBlocks; };
@@ -64,6 +68,9 @@ public:
 
 	// Steady-state
 	buffer_event_t WaitForSyncEvent(DWORD dwTimeout);
+
+	uint32_t BufferFramesWritable() const;
+	uint32_t BufferBytesWritable() const;
 
 	bool WriteBuffer(char const* pBuffer, unsigned int Samples);
 
