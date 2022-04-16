@@ -104,6 +104,7 @@ private:
 	unsigned int	m_iBlockSize;				// in bytes
 
 	// State
+	bool m_readyToWrite = false;
 	unsigned int m_iPrevWritePos;  // bytes
 };
 

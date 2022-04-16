@@ -842,12 +842,7 @@ void CSoundGen::ResetBuffer()
 }
 
 bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable) {
-	auto w = m_pDSoundChannel->BufferFramesWritable();
-	TRACE("BufferFramesWritable=%d\n", w);
-	if (w >= m_pDSoundChannel->GetBlockSamples()) {
-		goto done;
-	}
-
+	// Should be idempotent.
 	// Wait for a buffer event
 	while (true) {
 		DWORD dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT);
@@ -876,6 +871,7 @@ bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWrit
 done:
 
 	framesWritable = GetBufferFramesWritable();
+	ASSERT(framesWritable > 0);
 	bytesWritable = m_pDSoundChannel->FramesToBytes(framesWritable);
 	return true;
 }
@@ -924,6 +920,8 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	T *pConversionBuffer = (T*)m_pAccumBuffer;
 
 	unsigned int framesWritable, bytesWritable;
+	TryWaitForWritable(framesWritable, bytesWritable);
+	TryWaitForWritable(framesWritable, bytesWritable);
 	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
 		return;
 	}

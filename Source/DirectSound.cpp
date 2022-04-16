@@ -344,12 +344,25 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 			return BUFFER_NONE;
 	}
 
+	auto done = [&]() {
+		auto dw = GetWritableBlock();
+		auto ww = (m_iPrevWritePos / m_iBlockSize);
+		TRACE("    WaitForSyncEvent, dw=%d, ww=%d/%d=%d\n", dw, m_iPrevWritePos, m_iBlockSize, ww);
+		return (dw == ww) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
+	};
+
+
+	if (m_readyToWrite) {
+		return done();
+	}
+
 	// Wait for events
 	switch (::WaitForMultipleObjects(2, m_hEventList, FALSE, dwTimeout)) {
 	case WAIT_OBJECT_0:			// External event
 		return BUFFER_CUSTOM_EVENT;
 	case WAIT_OBJECT_0 + 1:		// DirectSound buffer
-		return (GetWritableBlock() == (m_iPrevWritePos / m_iBlockSize)) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
+		m_readyToWrite = true;
+		return done();
 	case WAIT_TIMEOUT:			// Timeout
 		return BUFFER_TIMEOUT;
 	}
@@ -373,7 +386,9 @@ uint32_t CDSoundChannel::BufferFramesWritable()
 		PlayPos += m_iSoundBufferSize;
 	}
 	ASSERT(PlayPos >= m_iPrevWritePos);
-	return (PlayPos - m_iPrevWritePos) / (m_iChannels * m_iSampleBytes);
+	auto out = (PlayPos - m_iPrevWritePos) / (m_iChannels * m_iSampleBytes);
+	TRACE("BufferFramesWritable() = %d\n", out);
+	return out;
 }
 
 uint32_t CDSoundChannel::BufferBytesWritable()
@@ -392,6 +407,10 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
+
+	// Unconditionally block on next write call, even if lock/unlock fails.
+	// This prevents deadlock (WaitForSyncEvent not seeing interrupts)?
+	m_readyToWrite = false;
 
 	auto BytesWritten = FramesToBytes(Samples);
 
