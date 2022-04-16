@@ -362,7 +362,12 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 
 	ASSERT(Samples == m_iBlockSize);
 
-	if (FAILED(m_lpDirectSoundBuffer->Lock(Block * m_iBlockSize, m_iBlockSize, (void**)&pAudioPtr1, &AudioBytes1, (void**)&pAudioPtr2, &AudioBytes2, 0)))
+	if (FAILED(m_lpDirectSoundBuffer->Lock(
+		Block * m_iBlockSize, m_iBlockSize,
+		&pAudioPtr1, &AudioBytes1,
+		&pAudioPtr2, &AudioBytes2,
+		0
+	)))
 		return false;
 
 	// Copy "pBuffer head" to "pAudioPtr1 circular buffer".
@@ -372,7 +377,7 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	if (pAudioPtr2)
 		memcpy(pAudioPtr2, pBuffer + AudioBytes1, AudioBytes2);
 
-	if (FAILED(m_lpDirectSoundBuffer->Unlock((void*)pAudioPtr1, AudioBytes1, (void*)pAudioPtr2, AudioBytes2)))
+	if (FAILED(m_lpDirectSoundBuffer->Unlock(pAudioPtr1, AudioBytes1, pAudioPtr2, AudioBytes2)))
 		return false;
 
 	AdvanceWritePointer();
