@@ -56,10 +56,9 @@ public:
 	// Buffer calculations
 
 	int GetBlockSize() const	{ return m_iBlockSize; };
-	int GetBlockSamples() const	{ return m_iBlockSize >> ((m_iSampleSize >> 3) - 1); };
+	int GetBlockSamples() const	{ return m_iBlockSize >> (m_iSampleBytes - 1); };
 	int GetBlocks()	const		{ return m_iBlocks; };
 	int	GetBufferLength() const	{ return m_iBufferLength; };
-	int GetSampleSize()	const	{ return m_iSampleSize;	};
 	int	GetSampleRate()	const	{ return m_iSampleRate;	};
 	int GetChannels() const		{ return m_iChannels; };
 
@@ -91,7 +90,7 @@ private:
 	HWND			m_hWndTarget;
 
 	// Configuration
-	unsigned int	m_iSampleSize;
+	unsigned int	m_iSampleBytes;
 	unsigned int	m_iSampleRate;
 	unsigned int	m_iChannels;
 	unsigned int	m_iBufferLength;

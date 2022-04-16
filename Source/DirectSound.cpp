@@ -196,7 +196,7 @@ CDSoundChannel *CDSound::OpenChannel(int SampleRate, int SampleSize, int Channel
 	pChannel->m_iSoundBufferSize	= SoundBufferSize;		// in bytes
 	pChannel->m_iBlockSize			= BlockSize;			// in bytes
 	pChannel->m_iBlocks				= Blocks;
-	pChannel->m_iSampleSize			= SampleSize;
+	pChannel->m_iSampleBytes		= SampleSize / 8;
 	pChannel->m_iSampleRate			= SampleRate;
 	pChannel->m_iChannels			= Channels;
 
@@ -306,7 +306,7 @@ bool CDSoundChannel::ClearBuffer()
 	if (FAILED(m_lpDirectSoundBuffer->Lock(0, m_iSoundBufferSize, (void**)&pAudioPtr1, &AudioBytes1, (void**)&pAudioPtr2, &AudioBytes2, 0)))
 		return false;
 
-	if (m_iSampleSize == 8) {
+	if (m_iSampleBytes == 1) {
 		memset(pAudioPtr1, 0x80, AudioBytes1);
 		if (pAudioPtr2)
 			memset(pAudioPtr2, 0x80, AudioBytes2);
