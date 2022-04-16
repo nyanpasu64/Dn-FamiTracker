@@ -360,21 +360,20 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 
 uint32_t CDSoundChannel::BufferFramesWritable()
 {
-	DWORD PlayPos, WritePos;
-	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, &WritePos);
-	TRACE("PlayPos=%d WritePos=%d\n", PlayPos, WritePos);
-	m_iPrevWritePos = WritePos;
+	DWORD PlayPos;
+	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, nullptr);
+	TRACE("PlayPos=%d WritePos=%d\n", PlayPos, m_iPrevWritePos);
 
 	// Only write up to the block boundary preceding PlayPos.
 	// TODO Remove this line if it causes stuttering.
 	PlayPos = PlayPos / m_iBlockSize * m_iBlockSize;
 
 	// Allow writing past the wraparound.
-	if (PlayPos < WritePos) {
+	if (PlayPos < m_iPrevWritePos) {
 		PlayPos += m_iSoundBufferSize;
 	}
-	ASSERT(PlayPos >= WritePos);
-	return (PlayPos - WritePos) / (m_iChannels * m_iSampleBytes);
+	ASSERT(PlayPos >= m_iPrevWritePos);
+	return (PlayPos - m_iPrevWritePos) / (m_iChannels * m_iSampleBytes);
 }
 
 uint32_t CDSoundChannel::BufferBytesWritable()
@@ -433,6 +432,5 @@ int CDSoundChannel::GetWritableBlock()
 	// Return the block where the write pos is
 	DWORD PlayPos, WritePos;
 	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, &WritePos);
-	m_iPrevWritePos = WritePos;
 	return (WritePos / m_iBlockSize);
 }
