@@ -344,34 +344,24 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 			return BUFFER_NONE;
 	}
 
+	auto done = [&]() {
+		auto dw = GetWritableBlock();
+		TRACE("    WaitForSyncEvent, dw=%d, write=%d\n", dw, m_iCurrentWriteBlock);
+		return (dw == m_iCurrentWriteBlock) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
+	};
+
 	// Wait for events
 	switch (::WaitForMultipleObjects(2, m_hEventList, FALSE, dwTimeout)) {
 	case WAIT_OBJECT_0:			// External event
 		return BUFFER_CUSTOM_EVENT;
 	case WAIT_OBJECT_0 + 1:		// DirectSound buffer
-		return (GetWritableBlock() == m_iCurrentWriteBlock) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
+		return done();
 	case WAIT_TIMEOUT:			// Timeout
 		return BUFFER_TIMEOUT;
 	}
 
 	// Error
 	return BUFFER_NONE;
-}
-
-uint32_t CDSoundChannel::BufferFramesWritable() const
-{
-	DWORD PlayPos, WritePos;
-	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, &WritePos);
-	if (PlayPos < WritePos) {
-		PlayPos += m_iSoundBufferSize;
-	}
-	ASSERT(PlayPos >= WritePos);
-	return (PlayPos - WritePos) / (m_iChannels * m_iSampleBytes);
-}
-
-uint32_t CDSoundChannel::BufferBytesWritable() const
-{
-	return FramesToBytes(BufferFramesWritable());
 }
 
 bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
@@ -381,6 +371,7 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	// Buffer	- Pointer to a buffer with samples
 	// Samples	- Number of samples, in bytes
 	//
+	TRACE("WriteBuffer(%d) {\n", Samples);
 
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
@@ -388,6 +379,7 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 
 	ASSERT(Samples == m_iBlockSize);
 
+	TRACE("Writing to block %d\n", Block);
 	if (FAILED(m_lpDirectSoundBuffer->Lock(
 		Block * m_iBlockSize, m_iBlockSize,
 		&pAudioPtr1, &AudioBytes1,
@@ -411,7 +403,7 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	return true;
 }
 
-int CDSoundChannel::GetPlayBlock() const
+int CDSoundChannel::GetPlayBlock()
 {
 	// Return the block where the play pos is
 	DWORD PlayPos, WritePos;
@@ -419,7 +411,7 @@ int CDSoundChannel::GetPlayBlock() const
 	return (PlayPos / m_iBlockSize);
 }
 
-int CDSoundChannel::GetWritableBlock() const
+int CDSoundChannel::GetWritableBlock()
 {
 	// Return the block where the write pos is
 	DWORD PlayPos, WritePos;
