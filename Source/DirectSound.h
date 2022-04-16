@@ -47,13 +47,13 @@ public:
 	CDSoundChannel();
 	~CDSoundChannel();
 
-	bool Play() const;
-	bool Stop() const;
+	// State changes
+	bool Play();
+	bool Stop();
 	bool IsPlaying() const;
 	bool ClearBuffer();
-	bool WriteBuffer(char const * pBuffer, unsigned int Samples);
 
-	buffer_event_t WaitForSyncEvent(DWORD dwTimeout) const;
+	// Buffer calculations
 
 	int GetBlockSize() const	{ return m_iBlockSize; };
 	int GetBlockSamples() const	{ return m_iBlockSize >> ((m_iSampleSize >> 3) - 1); };
@@ -62,6 +62,11 @@ public:
 	int GetSampleSize()	const	{ return m_iSampleSize;	};
 	int	GetSampleRate()	const	{ return m_iSampleRate;	};
 	int GetChannels() const		{ return m_iChannels; };
+
+	// Steady-state
+	buffer_event_t WaitForSyncEvent(DWORD dwTimeout);
+
+	bool WriteBuffer(char const* pBuffer, unsigned int Samples);
 
 private:
 	int GetPlayBlock() const;

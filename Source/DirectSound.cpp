@@ -275,13 +275,13 @@ CDSoundChannel::~CDSoundChannel()
 		CloseHandle(m_hEventList[1]);
 }
 
-bool CDSoundChannel::Play() const
+bool CDSoundChannel::Play()
 {
 	// Begin playback of buffer
 	return FAILED(m_lpDirectSoundBuffer->Play(NULL, NULL, DSBPLAY_LOOPING)) ? false : true;
 }
 
-bool CDSoundChannel::Stop() const
+bool CDSoundChannel::Stop()
 {
 	// Stop playback
 	return FAILED(m_lpDirectSoundBuffer->Stop()) ? false : true;
@@ -326,6 +326,28 @@ bool CDSoundChannel::ClearBuffer()
 	return true;
 }
 
+buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
+{
+	// Wait for a DirectSound event
+	if (!IsPlaying()) {
+		if (!Play())
+			return BUFFER_NONE;
+	}
+
+	// Wait for events
+	switch (::WaitForMultipleObjects(2, m_hEventList, FALSE, dwTimeout)) {
+	case WAIT_OBJECT_0:			// External event
+		return BUFFER_CUSTOM_EVENT;
+	case WAIT_OBJECT_0 + 1:		// DirectSound buffer
+		return (GetWritableBlock() == m_iCurrentWriteBlock) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
+	case WAIT_TIMEOUT:			// Timeout
+		return BUFFER_TIMEOUT;
+	}
+
+	// Error
+	return BUFFER_NONE;
+}
+
 bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 {
 	// Fill sound buffer
@@ -356,28 +378,6 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	AdvanceWritePointer();
 
 	return true;
-}
-
-buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout) const
-{
-	// Wait for a DirectSound event
-	if (!IsPlaying()) {
-		if (!Play())
-			return BUFFER_NONE;
-	}
-
-	// Wait for events
-	switch (::WaitForMultipleObjects(2, m_hEventList, FALSE, dwTimeout)) {
-		case WAIT_OBJECT_0:			// External event
-			return BUFFER_CUSTOM_EVENT;
-		case WAIT_OBJECT_0 + 1:		// DirectSound buffer
-			return (GetWritableBlock() == m_iCurrentWriteBlock) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
-		case WAIT_TIMEOUT:			// Timeout
-			return BUFFER_TIMEOUT;
-	}
-
-	// Error
-	return BUFFER_NONE;
 }
 
 int CDSoundChannel::GetPlayBlock() const
