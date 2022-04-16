@@ -396,14 +396,14 @@ uint32_t CDSoundChannel::BufferBytesWritable()
 	return FramesToBytes(BufferFramesWritable());
 }
 
-bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
+bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Bytes)
 {
 	// Fill sound buffer
 	//
 	// Buffer	- Pointer to a buffer with samples
-	// Samples	- Number of samples, in bytes
+	// Bytes	- Number of samples, in bytes
 	//
-	TRACE("WriteBuffer(%d) {\n", Samples);
+	TRACE("WriteBuffer(%d) {\n", Bytes);
 
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
@@ -412,11 +412,9 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	// This prevents deadlock (WaitForSyncEvent not seeing interrupts)?
 	m_readyToWrite = false;
 
-	auto BytesWritten = FramesToBytes(Samples);
-
-	TRACE("Writing to %d += %d\n", m_iPrevWritePos, BytesWritten);
+	TRACE("Writing to %d += %d\n", m_iPrevWritePos, Bytes);
 	if (FAILED(m_lpDirectSoundBuffer->Lock(
-		m_iPrevWritePos, BytesWritten,
+		m_iPrevWritePos, Bytes,
 		&pAudioPtr1, &AudioBytes1,
 		&pAudioPtr2, &AudioBytes2,
 		0
@@ -433,7 +431,7 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	if (FAILED(m_lpDirectSoundBuffer->Unlock(pAudioPtr1, AudioBytes1, pAudioPtr2, AudioBytes2)))
 		return false;
 
-	m_iPrevWritePos = (m_iPrevWritePos + BytesWritten) % m_iSoundBufferSize;
+	m_iPrevWritePos = (m_iPrevWritePos + Bytes) % m_iSoundBufferSize;
 
 	return true;
 }

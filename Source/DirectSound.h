@@ -72,7 +72,7 @@ public:
 	uint32_t BufferFramesWritable();
 	uint32_t BufferBytesWritable();
 
-	bool WriteBuffer(char const* pBuffer, unsigned int Samples);
+	bool WriteBuffer(char const* pBuffer, unsigned int Bytes);
 
 private:
 	int GetPlayBlock();
