@@ -1016,7 +1016,7 @@ bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite
 		// Output to direct sound
 
 		// Write audio to buffer
-		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, bytesToWrite);
+		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, framesToWrite);
 
 		// Draw graph
 		m_csVisualizerWndLock.Lock();
