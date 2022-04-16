@@ -871,6 +871,7 @@ bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWrit
 done:
 
 	framesWritable = GetBufferFramesWritable();
+	// Useful for debugging. May occasionally crash on false positives in practice.
 	ASSERT(framesWritable > 0);
 	bytesWritable = m_pDSoundChannel->FramesToBytes(framesWritable);
 	return true;

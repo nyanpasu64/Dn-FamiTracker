@@ -344,24 +344,24 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 			return BUFFER_NONE;
 	}
 
+	auto dw = GetWritableBlock();
+	if (dw != m_iPrevWritePos / m_iBlockSize) {
+		TRACE("    CDSoundChannel::WaitForSyncEvent early exit BUFFER_IN_SYNC\n");
+		return BUFFER_IN_SYNC;
+	}
+
 	auto done = [&]() {
 		auto dw = GetWritableBlock();
 		auto ww = (m_iPrevWritePos / m_iBlockSize);
-		TRACE("    WaitForSyncEvent, dw=%d, ww=%d/%d=%d\n", dw, m_iPrevWritePos, m_iBlockSize, ww);
+		TRACE("    CDSoundChannel::WaitForSyncEvent, GetWritableBlock=%d, prev write=%d/%d=%d\n", dw, m_iPrevWritePos, m_iBlockSize, ww);
 		return (dw == ww) ? BUFFER_OUT_OF_SYNC : BUFFER_IN_SYNC;
 	};
-
-
-	if (m_readyToWrite) {
-		return done();
-	}
 
 	// Wait for events
 	switch (::WaitForMultipleObjects(2, m_hEventList, FALSE, dwTimeout)) {
 	case WAIT_OBJECT_0:			// External event
 		return BUFFER_CUSTOM_EVENT;
 	case WAIT_OBJECT_0 + 1:		// DirectSound buffer
-		m_readyToWrite = true;
 		return done();
 	case WAIT_TIMEOUT:			// Timeout
 		return BUFFER_TIMEOUT;
@@ -373,21 +373,21 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 
 uint32_t CDSoundChannel::BufferFramesWritable()
 {
-	DWORD PlayPos;
-	m_lpDirectSoundBuffer->GetCurrentPosition(&PlayPos, nullptr);
-	TRACE("PlayPos=%d WritePos=%d\n", PlayPos, m_iPrevWritePos);
+	DWORD Pos;
+	m_lpDirectSoundBuffer->GetCurrentPosition(nullptr, &Pos);
+	TRACE("CDSoundChannel::BufferFramesWritable(): Pos=%d WritePos=%d\n", Pos, m_iPrevWritePos);
 
-	// Only write up to the block boundary preceding PlayPos.
+	// Only write up to the block boundary preceding Pos.
 	// TODO Remove this line if it causes stuttering.
-	PlayPos = PlayPos / m_iBlockSize * m_iBlockSize;
+	Pos = Pos / m_iBlockSize * m_iBlockSize;
 
 	// Allow writing past the wraparound.
-	if (PlayPos < m_iPrevWritePos) {
-		PlayPos += m_iSoundBufferSize;
+	if (Pos < m_iPrevWritePos) {
+		Pos += m_iSoundBufferSize;
 	}
-	ASSERT(PlayPos >= m_iPrevWritePos);
-	auto out = (PlayPos - m_iPrevWritePos) / (m_iChannels * m_iSampleBytes);
-	TRACE("BufferFramesWritable() = %d\n", out);
+	ASSERT(Pos >= m_iPrevWritePos);
+	auto out = (Pos - m_iPrevWritePos) / (m_iChannels * m_iSampleBytes);
+	TRACE("CDSoundChannel::BufferFramesWritable() = %d\n", out);
 	return out;
 }
 
@@ -403,16 +403,12 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Bytes)
 	// Buffer	- Pointer to a buffer with samples
 	// Bytes	- Number of samples, in bytes
 	//
-	TRACE("WriteBuffer(%d) {\n", Bytes);
+	TRACE("CDSoundChannel::WriteBuffer(%d) {\n", Bytes);
 
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
 
-	// Unconditionally block on next write call, even if lock/unlock fails.
-	// This prevents deadlock (WaitForSyncEvent not seeing interrupts)?
-	m_readyToWrite = false;
-
-	TRACE("Writing to %d += %d\n", m_iPrevWritePos, Bytes);
+	TRACE("    Writing to %d += %d\n", m_iPrevWritePos, Bytes);
 	if (FAILED(m_lpDirectSoundBuffer->Lock(
 		m_iPrevWritePos, Bytes,
 		&pAudioPtr1, &AudioBytes1,
