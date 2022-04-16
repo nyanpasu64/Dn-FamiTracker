@@ -851,6 +851,7 @@ bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWrit
 	// Wait for a buffer event
 	while (true) {
 		DWORD dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT);
+		TRACE("WaitForSyncEvent=%d\n", dwEvent);
 		switch (dwEvent) {
 		case BUFFER_IN_SYNC:
 			goto done;
@@ -927,6 +928,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		return;
 	}
 
+	TRACE("loop {\n");
 	for (uint32_t i = 0; i < Size; ++i) {
 		int16_t Sample = pBuffer[i];
 
@@ -979,6 +981,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 			}
 		}
 	}
+	TRACE("} loop\n");
 
 	/*
 	Write the entire remaining buffer to DirectSound. In practice, this eliminates
@@ -998,6 +1001,7 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	entire remaining buffer to DirectSound.
 	*/
 	if (m_iBufferPtr > 0) {
+		TRACE("Playing residual\n");
 		ASSERT(m_iBufferPtr < framesWritable);
 		if (!PlayBuffer(m_iBufferPtr, m_pDSoundChannel->FramesToBytes(m_iBufferPtr)))
 			return;
@@ -1016,7 +1020,8 @@ bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite
 		// Output to direct sound
 
 		// Write audio to buffer
-		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, framesToWrite);
+		bool b = m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, framesToWrite);
+		TRACE("} = %d\n", b);
 
 		// Draw graph
 		m_csVisualizerWndLock.Lock();

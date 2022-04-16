@@ -389,13 +389,14 @@ bool CDSoundChannel::WriteBuffer(char const * pBuffer, unsigned int Samples)
 	// Buffer	- Pointer to a buffer with samples
 	// Samples	- Number of samples, in bytes
 	//
-	TRACE("WriteBuffer(%d)\n", Samples);
+	TRACE("WriteBuffer(%d) {\n", Samples);
 
 	LPVOID pAudioPtr1, pAudioPtr2;
 	DWORD AudioBytes1, AudioBytes2;
 
 	auto BytesWritten = FramesToBytes(Samples);
 
+	TRACE("Writing to %d += %d\n", m_iPrevWritePos, BytesWritten);
 	if (FAILED(m_lpDirectSoundBuffer->Lock(
 		m_iPrevWritePos, BytesWritten,
 		&pAudioPtr1, &AudioBytes1,
