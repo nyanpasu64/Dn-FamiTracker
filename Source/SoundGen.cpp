@@ -742,7 +742,7 @@ bool CSoundGen::ResetAudioDevice()
 	}
 
 	// Create a buffer
-	m_iBufSizeBytes	  = m_pDSoundChannel->GetBlockSize();
+	m_iBufSizeBytes	  = m_pDSoundChannel->GetBufferSize();
 	m_iBufSizeSamples = m_iBufSizeBytes / (SampleSize / 8);
 
 	// Temp. audio buffer

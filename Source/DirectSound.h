@@ -59,7 +59,7 @@ public:
 	uint32_t BytesToFrames(uint32_t Bytes) const;
 	uint32_t FramesToBytes(uint32_t Frames) const;
 
-	int GetBlockSize() const	{ return m_iBlockSize; };
+	int GetBufferSize() const	{ return m_iSoundBufferSize; };
 	int GetBlockSamples() const	{ return m_iBlockSize >> (m_iSampleBytes - 1); };
 	int GetBlocks()	const		{ return m_iBlocks; };
 	int	GetBufferLength() const	{ return m_iBufferLength; };
