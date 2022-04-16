@@ -344,6 +344,11 @@ buffer_event_t CDSoundChannel::WaitForSyncEvent(DWORD dwTimeout)
 			return BUFFER_NONE;
 	}
 
+	auto dw = GetWritableBlock();
+	if (dw != m_iCurrentWriteBlock) {
+		return BUFFER_IN_SYNC;
+	}
+
 	auto done = [&]() {
 		auto dw = GetWritableBlock();
 		TRACE("    WaitForSyncEvent, dw=%d, write=%d\n", dw, m_iCurrentWriteBlock);
