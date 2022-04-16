@@ -841,6 +841,47 @@ void CSoundGen::ResetBuffer()
 	m_pAPU->Reset();
 }
 
+bool CSoundGen::TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable) {
+	// Wait for a buffer event
+	while (true) {
+		DWORD dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT);
+		switch (dwEvent) {
+		case BUFFER_IN_SYNC:
+			goto done;
+
+		case BUFFER_TIMEOUT:
+			// Buffer timeout
+			m_bBufferTimeout = true;
+			[[fallthrough]];	// Is this intentional??
+
+		case BUFFER_CUSTOM_EVENT:
+			// Custom event, quit
+			m_iBufferPtr = 0;
+			return false;
+
+		case BUFFER_OUT_OF_SYNC:
+			// Buffer underrun detected
+			m_iAudioUnderruns++;
+			m_bBufferUnderrun = true;
+			break;
+		}
+	}
+done:
+
+	framesWritable = GetBufferFramesWritable();
+	bytesWritable = m_pDSoundChannel->FramesToBytes(framesWritable);
+	return true;
+}
+
+unsigned int CSoundGen::GetBufferFramesWritable() const {
+	if (m_bRendering) {
+		return m_iBufSizeSamples;
+	}
+	else {
+		return m_pDSoundChannel->BufferFramesWritable();
+	}
+}
+
 void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Callback method from emulation
@@ -874,6 +915,11 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	const int SAMPLE_MAX = 32768;
 
 	T *pConversionBuffer = (T*)m_pAccumBuffer;
+
+	unsigned int framesWritable, bytesWritable;
+	if (!TryWaitForWritable(framesWritable, bytesWritable)) {
+		return;
+	}
 
 	for (uint32_t i = 0; i < Size; ++i) {
 		int16_t Sample = pBuffer[i];
@@ -918,57 +964,59 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		pConversionBuffer[m_iBufferPtr++] = (T)Sample;
 
 		// If buffer is filled, throw it to direct sound
-		if (m_iBufferPtr >= m_iBufSizeSamples) {
-			if (!PlayBuffer())
+		if (m_iBufferPtr >= framesWritable) {
+			if (!PlayBuffer(framesWritable, bytesWritable))
 				return;
+
+			if (!TryWaitForWritable(framesWritable, bytesWritable)) {
+				return;
+			}
 		}
+	}
+
+	/*
+	Write the entire remaining buffer to DirectSound. In practice, this eliminates
+	stuttering at low latencies (below 30ms or so), though I'm not sure why.
+	How do we know it's legal to do so?
+
+	Before the loop, we call TryWaitForWritable(), which calls WaitForReady() before
+	updating framesWritable.
+
+	On every loop iteration, we check if m_iBufferPtr >= framesWritable.
+	If so, we call CSoundGen::PlayBuffer() (which sets m_iBufferPtr to 0), then call
+	TryWaitForWritable() again. So after each loop iteration, we've called
+	TryWaitForWritable() at least once since last calling CSoundGen::PlayBuffer(),
+	and either m_iBufferPtr == 0 or m_iBufferPtr < framesWritable.
+
+	Therefore once the loop finishes, if m_iBufferPtr > 0, it's legal to write the
+	entire remaining buffer to DirectSound.
+	*/
+	if (m_iBufferPtr > 0) {
+		ASSERT(m_iBufferPtr < framesWritable);
+		if (!PlayBuffer(m_iBufferPtr, m_pDSoundChannel->FramesToBytes(m_iBufferPtr)))
+			return;
 	}
 }
 
-bool CSoundGen::PlayBuffer()
+bool CSoundGen::PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite)
 {
 	if (m_bRendering) {
 		// Output to file
 		ASSERT(m_pWaveFile);		// // //
-		m_pWaveFile->WriteWave(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pWaveFile->WriteWave(m_pAccumBuffer, bytesToWrite);
 		m_iBufferPtr = 0;
 	}
 	else {
 		// Output to direct sound
-		// Wait for a buffer event
-		while (true) {
-			DWORD dwEvent = m_pDSoundChannel->WaitForSyncEvent(AUDIO_TIMEOUT);
-			switch (dwEvent) {
-				case BUFFER_IN_SYNC:
-					goto done;
-
-				case BUFFER_TIMEOUT:
-					// Buffer timeout
-					m_bBufferTimeout = true;
-					[[fallthrough]];	// Is this intentional??
-
-				case BUFFER_CUSTOM_EVENT:
-					// Custom event, quit
-					m_iBufferPtr = 0;
-					return false;
-
-				case BUFFER_OUT_OF_SYNC:
-					// Buffer underrun detected
-					m_iAudioUnderruns++;
-					m_bBufferUnderrun = true;
-					break;
-			}
-		}
-		done:
 
 		// Write audio to buffer
-		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, m_iBufSizeBytes);
+		m_pDSoundChannel->WriteBuffer(m_pAccumBuffer, bytesToWrite);
 
 		// Draw graph
 		m_csVisualizerWndLock.Lock();
 
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, m_iBufSizeSamples);
+			m_pVisualizerWnd->FlushSamples(m_iGraphBuffer, framesToWrite);
 
 		m_csVisualizerWndLock.Unlock();
 

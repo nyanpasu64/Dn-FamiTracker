@@ -123,6 +123,8 @@ public:
 
 	// Sound
 	bool		InitializeSound(HWND hWnd);
+	bool TryWaitForWritable(uint32_t& framesWritable, uint32_t& bytesWritable);
+	unsigned int GetBufferFramesWritable() const;
 	void		FlushBuffer(int16_t const * pBuffer, uint32_t Size);
 	CDSound		*GetSoundInterface() const { return m_pDSound; };
 
@@ -253,7 +255,7 @@ private:
 	void		CloseAudioDevice();
 	void		CloseAudio();
 	template<class T, int SHIFT> void FillBuffer(int16_t const * pBuffer, uint32_t Size);
-	bool		PlayBuffer();
+	bool		PlayBuffer(unsigned int framesToWrite, unsigned int bytesToWrite);
 
 	// Player
 	void		UpdateChannels();
