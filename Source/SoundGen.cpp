@@ -759,10 +759,10 @@ bool CSoundGen::ResetAudioDevice()
 
 	CSettings *pSettings = theApp.GetSettings();
 
-	unsigned int SampleSize = pSettings->Sound.iSampleSize;
-	unsigned int SampleRate = pSettings->Sound.iSampleRate;
-	unsigned int BufferLen	= pSettings->Sound.iBufferLength;
-	unsigned int Device		= pSettings->Sound.iDevice;
+	unsigned int SampleSize			= pSettings->Sound.iSampleSize;
+	unsigned int TargetSampleRate	= pSettings->Sound.iSampleRate;
+	unsigned int BufferLen			= pSettings->Sound.iBufferLength;
+	unsigned int Device				= pSettings->Sound.iDevice;
 
 	auto l = Lock();
 
@@ -792,13 +792,15 @@ bool CSoundGen::ResetAudioDevice()
 		iBlocks += (BufferLen / 66);
 
 	// Create channel
-	m_pSoundStream = m_pSoundInterface->OpenChannel(SampleRate, SampleSize, 1, BufferLen, iBlocks);
+	m_pSoundStream = m_pSoundInterface->OpenChannel(TargetSampleRate, SampleSize, 1, BufferLen, iBlocks);
 
 	// Channel failed
 	if (m_pSoundStream == NULL) {
 		m_pTrackerView->PostAudioMessage(AM_ERROR, IDS_SOUND_BUFFER_ERROR, MB_ICONERROR);
 		return false;
 	}
+
+	int WASAPISamplerate = m_pSoundStream->GetSampleRate();
 
 	// Create a buffer
 	m_iBufSizeBytes	  = m_pSoundStream->TotalBufferSizeBytes();
@@ -816,10 +818,10 @@ bool CSoundGen::ResetAudioDevice()
 	{
 		std::unique_lock<std::mutex> lock(m_csVisualizerWndLock);
 		if (m_pVisualizerWnd)
-			m_pVisualizerWnd->SetSampleRate(SampleRate);
+			m_pVisualizerWnd->SetSampleRate(WASAPISamplerate);
 	}
 
-	if (!m_pAPU->SetupSound(SampleRate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
+	if (!m_pAPU->SetupSound(WASAPISamplerate, 1, (m_iMachineType == NTSC) ? MACHINE_NTSC : MACHINE_PAL))
 		return false;
 
 	currN163LevelOffset = m_pDocument->GetN163LevelOffset();
@@ -852,7 +854,7 @@ bool CSoundGen::ResetAudioDevice()
 	m_bBufferTimeout = false;
 	m_iClipCounter = 0;
 
-	TRACE("SoundGen: Created sound channel with params: %i Hz, %i bits, %i ms (%i blocks)\n", SampleRate, SampleSize, BufferLen, iBlocks);
+	TRACE("SoundGen: Created sound channel with params: %i Hz, %i bits, %i ms (%i blocks)\n", WASAPISamplerate, SampleSize, BufferLen, iBlocks);
 
 	return true;
 }
