@@ -210,7 +210,7 @@ int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Sa
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
+CSoundStream *CSoundInterface::OpenChannel(int TargetSampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
 {
 	// Based off https://docs.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams
 	if (!m_maybeDevice) {
@@ -231,7 +231,7 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 		// https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex#members
 		format.wFormatTag = WAVE_FORMAT_PCM;
 		format.nChannels = (WORD)Channels;
-		format.nSamplesPerSec = (DWORD)SampleRate;
+		format.nSamplesPerSec = (DWORD)TargetSampleRate;
 		format.wBitsPerSample = (WORD)SampleSize;
 
 		// If wFormatTag is WAVE_FORMAT_PCM or WAVE_FORMAT_EXTENSIBLE, nBlockAlign must be equal to
@@ -253,12 +253,26 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 	// Ensure that chosen audio format is supported.
 	WAVEFORMATEX* pClosestMatch{};
 	hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
-	if (Channels == 1 && (hr == S_FALSE || hr == AUDCLNT_E_UNSUPPORTED_FORMAT)) {
+	if (hr == S_FALSE || hr == AUDCLNT_E_UNSUPPORTED_FORMAT) {
 		CoTaskMemFree(pClosestMatch);
 		pClosestMatch = nullptr;
 
+		// Set sample rate to mix format.
+		{
+			WAVEFORMATEX* pMixFormat{};
+			hr = pAudioClient->GetMixFormat(&pMixFormat);
+			if (FAILED(hr)) {
+				CoTaskMemFree(pMixFormat);
+				return nullptr;
+			}
+			TargetSampleRate = (int) pMixFormat->nSamplesPerSec;
+			CoTaskMemFree(pMixFormat);
+		}
+
 		// Try again in stereo. We will upmix input mono to stereo.
+		// TODO pick stereo by default?
 		Channels = 2;
+
 		format = create_wave_format();
 		hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
 	}
@@ -323,7 +337,7 @@ CSoundStream *CSoundInterface::OpenChannel(int SampleRate, int SampleSize, int C
 		std::move(pAudioRenderClient),
 		m_hInterrupt,
 		std::move(bufferEvent),
-		SampleRate,
+		TargetSampleRate,
 		bufferFrameCount,
 		SampleSize / 8,  // bytesPerSample
 		InputChannels,
