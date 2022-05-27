@@ -210,8 +210,9 @@ int CSoundInterface::CalculateBufferLength(int BufferLen, int Samplerate, int Sa
 	return ((Samplerate * BufferLen) / 1000) * (Samplesize / 8) * Channels;
 }
 
-CSoundStream *CSoundInterface::OpenChannel(int TargetSampleRate, int SampleSize, int Channels, int BufferLength, int Blocks)
-{
+CSoundStream *CSoundInterface::OpenFloatChannel(
+	int TargetSampleRate, int Channels, int BufferLength, int Blocks
+) {
 	// Based off https://docs.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams
 	if (!m_maybeDevice) {
 		return nullptr;
@@ -229,10 +230,10 @@ CSoundStream *CSoundInterface::OpenChannel(int TargetSampleRate, int SampleSize,
 		WAVEFORMATEX format{};
 
 		// https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex#members
-		format.wFormatTag = WAVE_FORMAT_PCM;
+		format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
 		format.nChannels = (WORD)Channels;
 		format.nSamplesPerSec = (DWORD)TargetSampleRate;
-		format.wBitsPerSample = (WORD)SampleSize;
+		format.wBitsPerSample = 32;
 
 		// If wFormatTag is WAVE_FORMAT_PCM or WAVE_FORMAT_EXTENSIBLE, nBlockAlign must be equal to
 		// the product of nChannels and wBitsPerSample divided by 8 (bits per byte).
@@ -339,7 +340,7 @@ CSoundStream *CSoundInterface::OpenChannel(int TargetSampleRate, int SampleSize,
 		std::move(bufferEvent),
 		TargetSampleRate,
 		bufferFrameCount,
-		SampleSize / 8,  // bytesPerSample
+		4,  // bytesPerSample = 4 for float
 		InputChannels,
 		Channels);
 }
@@ -561,7 +562,7 @@ uint32_t CSoundStream::BufferBytesWritable() const {
 	return FramesToPubBytes(BufferFramesWritable());
 }
 
-bool CSoundStream::WriteBuffer(char const * pSrcBuffer, unsigned int Bytes)
+bool CSoundStream::WriteBuffer(float const* pSrcBuffer, unsigned int Bytes)
 {
 	// Bytes comes from CSoundStream::BufferBytesWritable().
 	unsigned int frames = PubBytesToFrames(Bytes);
@@ -572,25 +573,13 @@ bool CSoundStream::WriteBuffer(char const * pSrcBuffer, unsigned int Bytes)
 
 	if (m_outputChannels == 2 && m_inputChannels == 1) {
 		// Upmix mono to stereo.
-		ASSERT(m_bytesPerSample == 1 || m_bytesPerSample == 2);
-		switch (m_bytesPerSample) {
-		case 1: {
-			// feeling fancy, might remove __restrict later
-			auto src8 = (int8_t const* __restrict)pSrcBuffer;
-			auto dst8 = (int8_t * __restrict)pOutData;
-			for (size_t i = 0; i < frames; i++) {
-				dst8[2 * i] = dst8[2 * i + 1] = src8[i];
-			}
-			break;
-		}
-		case 2: {
-			auto src16 = (int16_t const* __restrict)pSrcBuffer;
-			auto dst16 = (int16_t * __restrict)pOutData;
-			for (size_t i = 0; i < frames; i++) {
-				dst16[2 * i] = dst16[2 * i + 1] = src16[i];
-			}
-			break;
-		}
+		ASSERT(m_bytesPerSample == 4);
+
+		// feeling fancy, might remove __restrict later
+		auto src8 = (float const* __restrict)pSrcBuffer;
+		auto dst8 = (float * __restrict)pOutData;
+		for (size_t i = 0; i < frames; i++) {
+			dst8[2 * i] = dst8[2 * i + 1] = src8[i];
 		}
 	} else {
 		memcpy(pOutData, pSrcBuffer, Bytes);
