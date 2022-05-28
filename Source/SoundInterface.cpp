@@ -479,7 +479,7 @@ uint32_t CSoundStream::TotalBufferSizeBytes() const {
 
 // Steady-state
 
-WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
+WaitResult CSoundStream::WaitForReady(DWORD dwTimeout, bool SkipIfWritable)
 {
 	auto onInterrupted = []() {
 		return WaitResult::Interrupted;
@@ -526,7 +526,7 @@ WaitResult CSoundStream::WaitForReady(DWORD dwTimeout)
 	// converting/buffering it.
 
 	// Check if we can write audio without waiting at all.
-	if (BufferFramesWritable()) {
+	if (SkipIfWritable && BufferFramesWritable()) {
 		return onWritable();
 	}
 
