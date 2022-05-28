@@ -481,6 +481,19 @@ uint32_t CSoundStream::TotalBufferSizeBytes() const {
 
 WaitResult CSoundStream::WaitForReady(DWORD dwTimeout, bool SkipIfWritable)
 {
+	// SkipIfWritable=false (after a full write) blocks if BufferFramesWritable > 0 but
+	// WASAPI is unsignalled. Does this ever happen?
+	if (!SkipIfWritable) {
+		auto frames = BufferFramesWritable();
+		if (frames > 0) {
+			if (WaitForSingleObject(m_bufferEvent.get(), 0) != WAIT_OBJECT_0) {
+				TRACE(
+					"After a full write, WASAPI released %u frames without signalling\n",
+					frames);
+			}
+		}
+	}
+
 	auto onInterrupted = []() {
 		return WaitResult::Interrupted;
 	};
