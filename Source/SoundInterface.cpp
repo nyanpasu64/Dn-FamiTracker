@@ -224,6 +224,7 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 	if (FAILED(hr)) return nullptr;
 
 	const int InputChannels = Channels;
+	const int InputSampleRate = TargetSampleRate;
 
 	auto create_wave_format = [&]() {
 		// Can't use designated initializers since we're not in C++20 mode.
@@ -249,7 +250,38 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 
 		return format;
 	};
+	{
+		auto debug = [&]() {
+			WAVEFORMATEX format = create_wave_format();
+			WAVEFORMATEX* pClosestMatch{};
+			TRACE("ch=%d rate=%d err %x\n",
+				Channels,
+				TargetSampleRate,
+				pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch));
+			CoTaskMemFree(pClosestMatch);
+		};
+
+		debug();
+		Channels = 2;
+		debug();
+		Channels = 1;
+		TargetSampleRate *= 2;
+		debug();
+		Channels = 2;
+		debug();
+
+		Channels = InputChannels;
+		TargetSampleRate = InputSampleRate;
+	}
 	WAVEFORMATEX format = create_wave_format();
+
+	WAVEFORMATEX* pMixFormat{};
+	hr = pAudioClient->GetMixFormat(&pMixFormat);
+	if (FAILED(hr)) {
+		CoTaskMemFree(pMixFormat);
+		return nullptr;
+	}
+	TRACE("mix rate=%u\n", pMixFormat->nSamplesPerSec);
 
 	// Ensure that chosen audio format is supported.
 	WAVEFORMATEX* pClosestMatch{};
@@ -260,12 +292,6 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 
 		// Set sample rate to mix format.
 		{
-			WAVEFORMATEX* pMixFormat{};
-			hr = pAudioClient->GetMixFormat(&pMixFormat);
-			if (FAILED(hr)) {
-				CoTaskMemFree(pMixFormat);
-				return nullptr;
-			}
 			TargetSampleRate = (int) pMixFormat->nSamplesPerSec;
 			CoTaskMemFree(pMixFormat);
 		}
@@ -276,6 +302,8 @@ CSoundStream *CSoundInterface::OpenFloatChannel(
 
 		format = create_wave_format();
 		hr = pAudioClient->IsFormatSupported(AUDCLNT_SHAREMODE_SHARED, &format, &pClosestMatch);
+	} else {
+		CoTaskMemFree(pMixFormat);
 	}
 
 	// So far we don't need to handle audio format fallback, since Windows 7/10 and
