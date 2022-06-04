@@ -119,6 +119,14 @@ int dither(long size);
 // the default window message limit is 10000. Let's use 8192 for our replacement queue.
 static constexpr size_t MESSAGE_QUEUE_SIZE = 8192;
 
+static void Lap(TCHAR* label) {
+	static LONGLONG prev;
+	LARGE_INTEGER t;
+	QueryPerformanceCounter(&t);
+	TRACE("%s took %lld\n", label, t.QuadPart - prev);
+	prev = t.QuadPart;
+}
+
 CSoundGen::CSoundGen() :
 	m_MessageQueue(MESSAGE_QUEUE_SIZE),
 	m_pAPU(NULL),
@@ -944,6 +952,7 @@ endWhile:
 void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 {
 	// Callback method from emulation
+	Lap("{ FlushBuffer");
 
 	// May only be called from sound player thread
 	ASSERT(std::this_thread::get_id() == m_audioThreadID);
@@ -951,7 +960,9 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	if (!m_pSoundStream)
 		return;
 
+	Lap("{ FillBuffer");
 	FillBuffer(pBuffer, Size);
+	Lap("} FillBuffer");
 
 	if (m_iClipCounter > 50) {
 		// Ignore some clipping to allow the HP-filter adjust itself
@@ -960,6 +971,7 @@ void CSoundGen::FlushBuffer(int16_t const * pBuffer, uint32_t Size)
 	}
 	else if (m_iClipCounter > 0)
 		--m_iClipCounter;
+	Lap("} FlushBuffer");
 }
 
 void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
@@ -1026,9 +1038,11 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 		src_short_to_float_array(pBuffer, pResampleInBuffer, Size);
 
 		while (bufferOffset < Size) {
+			Lap("{ TryWaitForWritable resample");
 			if (!TryWaitForWritable(framesWritable, first)) {
 				return;
 			}
+			Lap("} TryWaitForWritable resample");
 			first = false;
 
 			// Resample audio.
@@ -1066,9 +1080,11 @@ void CSoundGen::FillBuffer(int16_t const * pBuffer, uint32_t Size)
 	} else {
 		// Do *NOT* use `m_resamplerArgs` in this block!!!
 		while (bufferOffset < Size) {
+			Lap("{ TryWaitForWritable direct");
 			if (!TryWaitForWritable(framesWritable, first)) {
 				return;
 			}
+			Lap("} TryWaitForWritable direct");
 			first = false;
 
 			// Copy audio.
@@ -1773,7 +1789,9 @@ void CSoundGen::CheckControl()
 	if (m_bDirty) {
 		m_bDirty = false;
 		if (!m_bRendering)
+			Lap("CheckControl before PostAudioMessage");
 			m_pTrackerView->PostAudioMessage(AM_PLAYER, m_iPlayFrame, m_iPlayRow);
+			Lap("CheckControl PostAudioMessage");
 	}
 }
 
@@ -2162,6 +2180,7 @@ void CSoundGen::ExitInstance()
 
 void CSoundGen::OnIdle()
 {
+	Lap("{ OnIdle");
 	//
 	// Main loop for audio playback thread
 	//
@@ -2173,27 +2192,37 @@ void CSoundGen::OnIdle()
 
 	// Access the document object, skip if access wasn't granted to avoid gaps in audio playback
 	if (m_pDocument->LockDocument(0)) {
+		Lap("{ LockDocument=1");
 
 		// Read module framerate
 		m_iFrameRate = m_pDocument->GetFrameRate();
+		Lap("GetFrameRate");
 
 		RunFrame();
+		Lap("RunFrame");
 
 		// Play queued notes
 		PlayChannelNotes();
+		Lap("PlayChannelNotes");
 
 		// Update player
 		UpdatePlayer();
+		Lap("UpdatePlayer");
 
 		// Channel updates (instruments, effects etc)
 		UpdateChannels();
+		Lap("UpdateChannels");
 
 		// Unlock document
 		m_pDocument->UnlockDocument();
+		Lap("} UnlockDocument");
+	} else {
+		Lap("LockDocument=0");
 	}
 
 	// Update APU registers
 	UpdateAPU();
+	Lap("UpdateAPU");
 
 	if (IsPlaying()) {		// // //
 		int Channel = m_pInstRecorder->GetRecordChannel();
@@ -2229,6 +2258,8 @@ void CSoundGen::OnIdle()
 		delete m_pPreviewSample;
 		m_pPreviewSample = NULL;
 	}
+
+	Lap("} OnIdle");
 }
 
 void CSoundGen::PlayChannelNotes()
@@ -2301,7 +2332,9 @@ void CSoundGen::UpdateAPU()
 
 	{
 		auto l = DeferLock();
+		Lap("UpdateAPU/DeferLock");
 		if (l.try_lock()) {
+			Lap("UpdateAPU/try_lock()");
 			// Update APU channel registers
 			unsigned int PrevChip = SNDCHIP_NONE;		// // // 050B
 			for (int i = 0; i < CHANNELS; ++i) {
@@ -2330,9 +2363,12 @@ void CSoundGen::UpdateAPU()
 			}
 
 			m_pAPU->AddCycles(m_iUpdateCycles - m_iConsumedCycles);
+			Lap("UpdateAPU/before Process");
 			m_pAPU->Process();
+			Lap("UpdateAPU/Process()");
 
 			l.unlock();
+			Lap("UpdateAPU/unlock()");
 		}
 	}
 
@@ -2456,8 +2492,11 @@ void CSoundGen::OnRemoveDocument(WPARAM wParam, LPARAM lParam)
 
 void CSoundGen::RegisterKeyState(int Channel, int Note)
 {
-	if (m_pTrackerView != NULL)
+	if (m_pTrackerView != NULL) {
+		Lap("RegisterKeyState before PostAudioMessage");
 		m_pTrackerView->PostAudioMessage(AM_NOTE_EVENT, Channel, Note);
+		Lap("RegisterKeyState after PostAudioMessage");
+	}
 }
 
 // FDS & N163
