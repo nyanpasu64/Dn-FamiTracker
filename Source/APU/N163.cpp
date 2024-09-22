@@ -54,6 +54,7 @@ void CN163::Reset()
 	m_N163.Reset();
 	m_N163.SetMixing(m_bUseLinearMixing);
 
+	fprintf(stderr, "CN163::Reset(%u)\n", m_iTime);
 	m_iTime = 0;
 	m_SynthN163.clear();
 	m_BlipN163.clear();
@@ -143,6 +144,7 @@ void CN163::EndFrame(Blip_Buffer& Output, gsl::span<int16_t> TempBuffer)
 			}
 	}
 
+	fprintf(stderr, "m_BlipN163.end_frame(%u)\n", m_iTime);
 	m_BlipN163.end_frame(m_iTime);
 
 	ASSERT(size_t(m_BlipN163.samples_avail()) <= TempBuffer.size());
