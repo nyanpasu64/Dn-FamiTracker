@@ -178,7 +178,7 @@ add_executable(${exe}
         Source/APU/VRC6.h
         Source/APU/VRC7.cpp
         Source/APU/VRC7.h
-		
+
         Source/AboutDlg.cpp
         Source/AboutDlg.h
         Source/Accelerator.cpp
@@ -461,6 +461,8 @@ add_executable(${exe}
         Source/SwapDlg.h
         Source/TextExporter.cpp
         Source/TextExporter.h
+        Source/JsonExporter.cpp
+        Source/JsonExporter.h
         Source/to_sv.h
         Source/TrackerChannel.cpp
         Source/TrackerChannel.h
