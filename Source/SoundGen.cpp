@@ -251,6 +251,8 @@ CSoundGen::CSoundGen() :
 	m_iMachineType(NTSC),
 	m_bRequestRenderStart(false),
 	m_bRendering(false),
+	m_bStoppingRender(true),
+	m_iDelayedEnd(120),
 	m_iBPMCachePosition(0),
 	m_iRegisterStream(),
 	m_bWaveChanged(0),		// // //
@@ -543,7 +545,7 @@ void CSoundGen::DocumentPropertiesChanged(CFamiTrackerDoc *pDocument)
 
 	for (int i = 0; i < NOTE_COUNT; ++i) {
 		double Pitch;
-		
+
 		// 2A03 / MMC5 / VRC6
 		Pitch = pDetuneNTSC->FrequencyToPeriod(pDetuneNTSC->NoteToFreq(i), 1, 0);
 		m_iNoteLookupTableNTSC[i] = std::lround(Pitch - pDocument->GetDetuneOffset(0, i));		// // //
